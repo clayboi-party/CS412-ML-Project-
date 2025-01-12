@@ -3,62 +3,85 @@
 **Sarp Kaan Özdemir**
 
 ## 1. Overview of the Repository
-This repository demonstrates how we classify Instagram profiles into 10 distinct categories (e.g., food, fashion, tech, etc.) and also predict the like counts of individual posts. The primary goal is to showcase how incorporating textual data—like user biographies and captions—improves performance beyond simply using numeric/boolean features.
+This repository showcases a complete pipeline for **two core tasks** involving Instagram influencer data:
+
+1. **Classification** of users into 10 broad categories—food, fashion, health & lifestyle, tech, travel, entertainment, mom & children, art, gaming, and sports.  
+2. **Regression** to estimate the number of **likes** a future post may receive.
+
+The project aims to highlight how combining **numeric/boolean features** (e.g., follower counts, verification status) with **text-based features** (e.g., user biography, post captions) can yield more accurate predictions. I decided on a Random Forest approach for both tasks because it handles heterogeneous data types well and is relatively straightforward to interpret.
 
 ### Key Files & Scripts
 - **`main.py`**  
-  Central script that coordinates data loading, training, and prediction for both classification and regression.
+  Acts as the central hub for the entire pipeline—loading data, invoking the classification and regression routines, and finally generating predictions.
 
 - **`load_and_preprocess_data()`**  
-  Retrieves dataset files (classification CSV, JSONL data, test usernames, and regression test data).
+  - Loads all relevant dataset files:
+    - The classification CSV (`train-classification.csv`), 
+    - The primary JSONL (`training-dataset.jsonl`) containing profile and post info, 
+    - A file listing usernames to test classification (`test-classification-round3.dat`),
+    - And the JSONL containing posts for regression (`test-regression-round3.jsonl`).
 
 - **`process_user_data_for_classification()`**  
-  Gathers each user’s numeric/boolean attributes and combines their textual data (biography, category, and captions).
+  - Extracts each user’s numeric/boolean attributes (followers, following, post count, account settings).  
+  - Consolidates textual data—biography, category name, and up to five post captions—into a single text string.  
+  - Associates each user with a label (if available) so the classification model can train on consistent samples.
 
 - **`train_classification_model_with_text()`**  
-  Employs TF-IDF for text features, then trains a Random Forest for the 10-category classification.
+  - Uses a `ColumnTransformer` to apply TF-IDF to the combined text field and to standardize numeric features.  
+  - Trains a Random Forest classifier on these combined features, thus leveraging both text-based signals and user metrics.
 
 - **`extract_posts_data()`** and **`prepare_regression_features()`**  
-  Assemble post-level information (captions, comments, media type) for the regression model, including text vectorization.
+  - Focus on post-level details for the regression model, extracting textual features (TF-IDF on captions), numeric info (comments count), and one-hot encoding media types (e.g., IMAGE, VIDEO).  
+  - Construct the feature matrix and regression targets (the `like_count`), returning them to be used by a `RandomForestRegressor`.
 
 ### Data Files
-- **`train-classification.csv`**: Usernames and their assigned classes.  
-- **`training-dataset.jsonl`**: Comprehensive JSONL file with profile and post details.  
-- **`test-classification-round3.dat`**: Usernames for classification testing.  
-- **`test-regression-round3.jsonl`**: Posts for which like counts need to be predicted.
+- **`train-classification.csv`**: Lists usernames and their assigned classes (the ground-truth categories).  
+- **`training-dataset.jsonl`**: A large JSONL file with each user’s profile data and a list of their posts.  
+- **`test-classification-round3.dat`**: Contains the usernames on which we run final classification predictions.  
+- **`test-regression-round3.jsonl`**: Holds posts for which we aim to predict like counts.
 
-All final predictions are saved to **`classification_output.json`** and **`regression_output.json`**.
+All model outputs get written to **`classification_output.json`** and **`regression_output.json`**, providing a direct mapping from username/post ID to predicted category or like count.
 
 ---
 
 ## 2. Methodology
-1. **Data Preprocessing**  
-   - Extract numeric attributes (follower/following/post counts, verification status, etc.).  
-   - Merge biography, category, and up to five post captions for classification inputs.  
-   - Isolate key post features (caption, comments count, media type) for the regression task.
 
-2. **Reasoning Behind Design Choices**  
-   - **Textual Focus**: Bios and captions often contain keywords indicative of a user’s domain (food vs. art vs. gaming).  
-   - **Variety of Features**: Combining numeric, boolean, and text data gives the model a more rounded perspective.
+1. **Data Preprocessing**  
+   - We parse each user’s profile to collect essential attributes: follower/following counts, whether the account is private or business, and so on.  
+   - We then create a **`text_data`** field combining the user’s biography, category name, and up to five post captions. This decision stems from the insight that short text snippets (like bios or captions) frequently contain strong indicators of a user’s content focus.
+
+2. **Reasoning Behind This Design**  
+   - **Balancing Structured and Unstructured Data**: Instagram accounts have both numeric signals (followers) and textual descriptions (bios, captions). A more holistic approach merges these to better capture user behavior and content theme.  
+   - **Random Forest**: Since we have a mixture of text (transformed via TF-IDF) and numeric features, Random Forest models are efficient, handle different feature types gracefully, and are more robust to outliers than some simpler models.  
+   - **Captions**: The content posted strongly correlates with the likes a user receives. Including these as text features for classification (to identify the user’s niche) and for regression (to help predict engagement) proved beneficial.
 
 3. **Modeling**  
-   - **Classification**: Uses TF-IDF for text transformation and a Random Forest to handle the varied nature of numeric/boolean data alongside text.  
-   - **Regression**: Leverages similar text processing on captions, plus relevant numerical fields (e.g., comments count).
+   - **Classification**:  
+     - **TF-IDF** is applied to each user’s combined text.  
+     - Numeric features are standardized to ensure fair weighting in the Random Forest.  
+     - The final classification model outputs one of the 10 categories.  
+   - **Regression**:  
+     - Similar textual transformation occurs on post captions, focusing on relevant keywords.  
+     - We combine that with each post’s comments count and media type to forecast `like_count`.  
+     - Predicted values are rounded and stored for downstream analysis.
 
-4. **Evaluation & Predictions**  
-   - Classification outputs each username’s predicted category.  
-   - Regression outputs estimated like counts for new/unseen posts.
+4. **Training and Evaluation**  
+   - For classification, training uses the merged DataFrame of user-level features plus labeled categories. Evaluation can be done by splitting the data or by applying the model to test usernames.  
+   - For regression, we train on historical posts (where actual `like_count` is known) and then apply the model to new posts in `test-regression-round3.jsonl`.  
+   - The final outputs (`classification_output.json` and `regression_output.json`) can be compared against real-world outcomes if the true labels/like counts are available.
 
 ---
 
 ## 3. Results
+
 - **Classification**  
-  - Numeric-only features gave limited insight into content types.  
-  - After including textual data (e.g., user biography, captions), classification became noticeably better at separating distinct categories.
+  - Prior to text integration, the classifier primarily leveraged numeric/boolean fields, providing only a partial picture of the account’s focus.  
+  - By incorporating **biography** and **caption** data, the model more accurately identifies a user’s niche. The presence of domain-specific words—like “recipe,” “travel,” “fitness,” or “gamer”—significantly enhances category prediction.
 
 - **Regression**  
-  - The approach to predicting like counts remained consistent, focusing on captions and a few numerical indicators.  
-  - Results are stored in `regression_output.json`.
+  - The regression model’s design remains consistent throughout: it uses post captions (TF-IDF), comments count, and media type.  
+  - The underlying logic is that certain captions, media formats, and discussion levels (comments count) tend to correlate with higher (or lower) likes.  
+  - The predicted like counts are written to `regression_output.json`, offering a practical estimate of engagement for future posts.
 
 ---
 
