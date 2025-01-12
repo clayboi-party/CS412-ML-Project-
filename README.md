@@ -1,70 +1,66 @@
-# CS412-ML-Project-
-CS412 Machine Learning Project Influencers / Sarp Kaan Özdemir
-
+# CS412-ML-Project
+**Machine Learning Project Influencers**  
+**Sarp Kaan Özdemir**
 
 ## 1. Overview of the Repository
-This repository contains a Python-based project that performs **two core tasks**:
-
-1. **Classification** of Instagram profiles into 10 categories (food, fashion, health & lifestyle, tech, travel, entertainment, mom & children, art, gaming, sports).  
-2. **Regression** to predict the **like counts** of social media posts.
+This repository demonstrates how we classify Instagram profiles into 10 distinct categories (e.g., food, fashion, tech, etc.) and also predict the like counts of individual posts. The primary goal is to showcase how incorporating textual data—like user biographies and captions—improves performance beyond simply using numeric/boolean features.
 
 ### Key Files & Scripts
 - **`main.py`**  
-  Orchestrates data loading, model training, and prediction for both classification and regression.
+  Central script that coordinates data loading, training, and prediction for both classification and regression.
 
 - **`load_and_preprocess_data()`**  
-  Loads dataset files (training classification CSV, training JSONL data, test usernames, and test regression data).
+  Retrieves dataset files (classification CSV, JSONL data, test usernames, and regression test data).
 
 - **`process_user_data_for_classification()`**  
-  Extracts numeric and textual features (biography, category name, and post captions) for the classification task.
+  Gathers each user’s numeric/boolean attributes and combines their textual data (biography, category, and captions).
 
 - **`train_classification_model_with_text()`**  
-  Builds a pipeline using TF-IDF for text data and trains a Random Forest classifier.
+  Employs TF-IDF for text features, then trains a Random Forest for the 10-category classification.
 
 - **`extract_posts_data()`** and **`prepare_regression_features()`**  
-  Collect and transform post-level data for the regression model, including TF-IDF features for captions and numeric features (comments count, media type).
+  Assemble post-level information (captions, comments, media type) for the regression model, including text vectorization.
 
 ### Data Files
-- **`train-classification.csv`**: Contains usernames and their respective class labels.  
-- **`training-dataset.jsonl`**: Main JSONL dataset with user profiles and posts.  
-- **`test-classification-round3.dat`**: List of usernames for classification testing.  
-- **`test-regression-round3.jsonl`**: Contains new posts for which we predict like counts.
+- **`train-classification.csv`**: Usernames and their assigned classes.  
+- **`training-dataset.jsonl`**: Comprehensive JSONL file with profile and post details.  
+- **`test-classification-round3.dat`**: Usernames for classification testing.  
+- **`test-regression-round3.jsonl`**: Posts for which like counts need to be predicted.
 
-All outputs are saved as **`classification_output.json`** and **`regression_output.json`**.
+All final predictions are saved to **`classification_output.json`** and **`regression_output.json`**.
 
 ---
 
 ## 2. Methodology
 1. **Data Preprocessing**  
-   - Profile-level numeric and boolean features are extracted (follower count, following count, etc.).  
-   - Biography, category name, and up to five post captions are concatenated for each user (classification).  
-   - Post-level features (caption TF-IDF, comments count, media type) are extracted for regression.
+   - Extract numeric attributes (follower/following/post counts, verification status, etc.).  
+   - Merge biography, category, and up to five post captions for classification inputs.  
+   - Isolate key post features (caption, comments count, media type) for the regression task.
 
-2. **Feature Engineering**  
-   - TF-IDF transforms textual data (bio, captions).  
-   - Numeric features are standardized.  
-   - One-hot encoding is used for categorical fields like `media_type`.
+2. **Reasoning Behind Design Choices**  
+   - **Textual Focus**: Bios and captions often contain keywords indicative of a user’s domain (food vs. art vs. gaming).  
+   - **Variety of Features**: Combining numeric, boolean, and text data gives the model a more rounded perspective.
 
 3. **Modeling**  
-   - **Classification**: A `RandomForestClassifier` is trained on both numeric features and TF-IDF vectors.  
-   - **Regression**: A `RandomForestRegressor` predicts `like_count` using TF-IDF on post captions plus numeric fields.
+   - **Classification**: Uses TF-IDF for text transformation and a Random Forest to handle the varied nature of numeric/boolean data alongside text.  
+   - **Regression**: Leverages similar text processing on captions, plus relevant numerical fields (e.g., comments count).
 
 4. **Evaluation & Predictions**  
-   - Classification predictions are generated for unseen usernames.  
-   - Regression predictions output estimated like counts for new posts.
+   - Classification outputs each username’s predicted category.  
+   - Regression outputs estimated like counts for new/unseen posts.
 
 ---
 
 ## 3. Results
 - **Classification**  
-  - Before adding text features, classification relied on numeric/boolean fields alone.  
-  - After integrating biography and captions, performance will improve, showing stronger ability to distinguish among the 10 content categories.
+  - Numeric-only features gave limited insight into content types.  
+  - After including textual data (e.g., user biography, captions), classification became noticeably better at separating distinct categories.
 
 - **Regression**  
-  - The regression approach remained mostly consistent. 
-  - Predicted like counts are saved in `regression_output.json`.
+  - The approach to predicting like counts remained consistent, focusing on captions and a few numerical indicators.  
+  - Results are stored in `regression_output.json`.
 
 ---
 
 ## 4. Team Contributions
-This project was completed **solo** by **Sarp Kaan Özdemir**. All code, data processing, and model development were done individually.
+This project was completed **solo** by **Sarp Kaan Özdemir**, covering all aspects of coding, data handling, modeling, and documentation.
