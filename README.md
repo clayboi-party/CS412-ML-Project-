@@ -58,13 +58,11 @@ All outputs are saved as **`classification_output.json`** and **`regression_outp
 ## 3. Results
 - **Classification**  
   - Before adding text features, classification relied on numeric/boolean fields alone.  
-  - After integrating biography and captions, performance (in a hypothetical x/10 scale) improved from **4/10** to **7/10**, showing stronger ability to distinguish among the 10 content categories.
+  - After integrating biography and captions, performance will improve, showing stronger ability to distinguish among the 10 content categories.
 
 - **Regression**  
-  - The regression approach remained mostly consistent, yielding modest improvement when tuned or tested on larger data (from a hypothetical **6/10** to **6.5–7/10**).  
+  - The regression approach remained mostly consistent. 
   - Predicted like counts are saved in `regression_output.json`.
-
-> *Note: These scores are illustrative placeholders, as the actual performance depends on real evaluation metrics.*
 
 ---
 
